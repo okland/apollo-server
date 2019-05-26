@@ -107,7 +107,6 @@ export class ApolloServerBase {
   public requestOptions: Partial<GraphQLOptions<any>> = Object.create(null);
 
   private context?: Context | ContextFunction;
-  private engineReportingAgent?: import('apollo-engine-reporting').EngineReportingAgent;
   private engineServiceId?: string;
   private engineApiKeyHash?: string;
   private extensions: Array<() => GraphQLExtension>;
@@ -332,7 +331,6 @@ export class ApolloServerBase {
     // In an effort to avoid over-exposing the API key itself, extract the
     // service ID from the API key for plugins which only needs service ID.
     // The truthyness of this value can also be used in other forks of logic
-    // related to Engine, as is the case with EngineReportingAgent just below.
     this.engineServiceId = getEngineServiceId(engine);
 
     const apiKey = getEngineApiKey(engine);
@@ -340,22 +338,6 @@ export class ApolloServerBase {
       this.engineApiKeyHash = createSHA('sha256')
         .update(apiKey)
         .digest('hex');
-    }
-
-    if (this.engineServiceId) {
-      const { EngineReportingAgent } = require('apollo-engine-reporting');
-      this.engineReportingAgent = new EngineReportingAgent(
-        typeof engine === 'object' ? engine : Object.create(null),
-        {
-          schema: this.schema,
-          schemaHash: this.schemaHash,
-          engine: {
-            serviceID: this.engineServiceId,
-          },
-        },
-      );
-      // Let's keep this extension second so it wraps everything, except error formatting
-      this.extensions.push(() => this.engineReportingAgent!.newExtension());
     }
 
     if (extensions) {
@@ -417,10 +399,6 @@ export class ApolloServerBase {
 
   public async stop() {
     if (this.subscriptionServer) await this.subscriptionServer.close();
-    if (this.engineReportingAgent) {
-      this.engineReportingAgent.stop();
-      await this.engineReportingAgent.sendReport();
-    }
   }
 
   public installSubscriptionHandlers(server: HttpServer) {

@@ -13,8 +13,6 @@ import WebSocket = require('ws');
 import { GraphQLExtension } from 'graphql-extensions';
 export { GraphQLExtension } from 'graphql-extensions';
 
-import { EngineReportingOptions } from 'apollo-engine-reporting';
-
 import { PlaygroundConfig } from './playground';
 export { PlaygroundConfig, PlaygroundRenderPageOptions } from './playground';
 
@@ -77,7 +75,7 @@ export interface Config extends BaseConfig {
   introspection?: boolean;
   mocks?: boolean | IMocks;
   mockEntireSchema?: boolean;
-  engine?: boolean | EngineReportingOptions<Context>;
+  engine?: boolean | any;
   extensions?: Array<() => GraphQLExtension>;
   cacheControl?: CacheControlExtensionOptions | boolean;
   plugins?: PluginDefinition[];
